@@ -182,6 +182,7 @@ function App() {
   const [rotationRate, setRotationRate] = React.useState([]);
   const [isZoomActive, setIsZoomActive, isZoomActiveRef] = useState(false);
   const [extraZoom, setExtraZoom, extraZoomRef] = useState(0);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
   const labels = Array.from(Array(accelData.length).keys());
   const chartRefAcc = React.useRef(null);
   const chartRefAtt = React.useRef(null);
@@ -359,19 +360,22 @@ function App() {
   const startWebSocket = () => {
     console.log('Websocket started.');
     ws = new WebSocket(`ws://stark-shore-79011.herokuapp.com/:8080`);
+    setIsSocketConnected(true);
 
     ws.onmessage = e => {
       var msg = JSON.parse(e.data);
 
       handleReceive(msg);
+      setIsSocketConnected(true);
     };
     ws.onclose = e => {
       console.log('Reconnecting: ', e.message);
-
+      setIsSocketConnected(false);
       setTimeout(startWebSocket, 5000);
     };
 
     ws.onerror = e => {
+      setIsSocketConnected(false);
       console.log(`Error: ${e.message}`);
     };
   };
@@ -512,6 +516,9 @@ function App() {
             <div>
               <p style={{ color: 'white' }}>
                 Current zoom: {chartRefAcc?.current?.getZoomLevel()}
+              </p>
+              <p style={{ color: 'white' }}>
+                Is Socket Alive: {isSocketConnected ? 'Yes' : 'No'}
               </p>
             </div>
           </div>
